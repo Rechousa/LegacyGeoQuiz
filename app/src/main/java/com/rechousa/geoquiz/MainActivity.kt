@@ -81,17 +81,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateQuestion() {
-        val questionTextResourceId = questionBank[currentIndex].textResourceId
+        val question = questionBank[currentIndex]
+        val questionTextResourceId = question.textResourceId
         binding.questionTextView.setText(questionTextResourceId)
+
+        val buttonsEnabled = !question.answered
+        binding.trueButton.isEnabled = buttonsEnabled
+        binding.falseButton.isEnabled = buttonsEnabled
     }
 
     private fun checkAnswer(view: View, userAnswer: Boolean) {
-        val correctAnswer = questionBank[currentIndex].answer
+        val question = questionBank[currentIndex]
+        val correctAnswer = question.answer
         val messageResourceId = if (userAnswer == correctAnswer) {
             R.string.correct_toast
         } else {
             R.string.incorrect_toast
         }
+
+        question.answered = true
+        updateQuestion()
+
         Snackbar.make(
             view,
             messageResourceId,
