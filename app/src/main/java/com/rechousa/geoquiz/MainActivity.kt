@@ -3,6 +3,7 @@ package com.rechousa.geoquiz
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import com.rechousa.geoquiz.databinding.ActivityMainBinding
@@ -85,21 +86,41 @@ class MainActivity : AppCompatActivity() {
         val questionTextResourceId = question.textResourceId
         binding.questionTextView.setText(questionTextResourceId)
 
-        val buttonsEnabled = !question.answered
+        val buttonsEnabled = question.correct == null
         binding.trueButton.isEnabled = buttonsEnabled
         binding.falseButton.isEnabled = buttonsEnabled
+
+        val missingQuestions = questionBank.count { it.correct == null }
+        if (missingQuestions == 0) {
+            computerScore()
+        }
+    }
+
+    private fun computerScore() {
+        val correctAnswers = questionBank.count { it.correct == true }
+        val wrongAnswers = questionBank.count { it.correct == false }
+        val percentage: Double = correctAnswers / (correctAnswers.toDouble() + wrongAnswers)
+        val percentageAsInt = (percentage * 100).toInt()
+        val text: CharSequence = "Your score is: ${percentageAsInt}%"
+
+        Toast.makeText(
+            applicationContext,
+            text,
+            Toast.LENGTH_LONG,
+        ).show()
     }
 
     private fun checkAnswer(view: View, userAnswer: Boolean) {
         val question = questionBank[currentIndex]
         val correctAnswer = question.answer
-        val messageResourceId = if (userAnswer == correctAnswer) {
+        val userAnswerIsCorrect = userAnswer == correctAnswer
+        val messageResourceId = if (userAnswerIsCorrect) {
             R.string.correct_toast
         } else {
             R.string.incorrect_toast
         }
 
-        question.answered = true
+        question.correct = userAnswerIsCorrect
         updateQuestion()
 
         Snackbar.make(
